@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Riley — Zihin Sarayı</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 👤 PROFİL ADI SORMA EKRANI -->
+  <div class="modal" id="profileSetupModal" style="z-index: 999;">
+    <div class="modal-content" style="max-width: 290px;">
+      <div style="font-size: 2.5rem; margin-bottom: 10px;">🧠</div>
+      <h3 style="margin-bottom: 10px; font-weight: 700;">Zihin Sarayına Hoş Geldin!</h3>
+      <p style="font-size: 0.78rem; opacity: 0.6; margin-bottom: 15px;">Uygulamanın sana adınla seslenebilmesi için lütfen ismini yazar mısın? ✨</p>
+      <input type="text" id="usernameInput" placeholder="Adın nedir?..." style="width: 100%; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0 12px; color: white; font-family: inherit; text-align: center; font-size: 0.9rem; outline: none; margin-bottom: 15px;">
+      <button class="submit-btn" style="opacity: 1; pointer-events: auto; height: 40px;" onclick="saveUserProfile()">Zihnimi Oluştur 🔮</button>
+    </div>
+  </div>
+
+  <!-- ÜST MENÜ BAR -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="app-title" id="appMainTitle">🧠 Riley<span>.</span></div>
+      <div class="current-selected-date" id="headerDateLabel">Bugün</div>
+    </div>
+    <div class="header-right">
+      <button class="icon-btn" onclick="openCalendarModal()">📅</button>
+      <button class="icon-btn" onclick="resetProfileName()" title="Profili Değiştir">👤</button>
+      <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+    </div>
+  </header>
+
+  <!-- ════════════ SEKMELER (TAB SECTIONS) ════════════ -->
+
+  <!-- 1. SEKME: ZİHİN (SADECE BOYAMA KÜRESİ VE 3D ÇEMBER) -->
+  <section id="tab-mind" class="tab-content active">
+    <div class="canvas-wrapper" style="margin-top: 0;">
+      <div class="canvas-help-text">Fırça seç, parmağınla küreni boya 🎨</div>
+      
+      <!-- Boyama Küresi -->
+      <div class="orb-canvas-container" id="orbContainer" style="margin: 10px 0;">
+        <div class="orb-highlight"></div>
+        <canvas id="orbCanvas" width="140" height="140"></canvas>
+      </div>
+
+      <!-- Durum Göstergeleri -->
+      <div class="brush-status" style="width: 100%; justify-content: center; gap: 15px; margin-bottom: 5px;">
+        <span id="activeBrushLabel" style="font-size:0.8rem;">🖌 ... Fırça Seçin ...</span>
+        <span class="total-badge" id="totalBadge">%0 / %100</span>
+        <button class="clear-btn" onclick="clearCanvas()" style="text-decoration: underline; font-size:0.75rem;">Sıfırla 🧼</button>
+      </div>
+    </div>
+
+    <!-- 20 Duygulu Fırça Şeridi -->
+    <div class="emotion-scroll-wrapper" id="brushWrapper" style="margin: 5px 0 10px;"></div>
+
+    <!-- 🔮 KÜREYİ KAYDETME BUTONU -->
+    <button class="submit-btn" id="submitOrbBtn" onclick="saveOnlyOrb()" style="margin-bottom: 15px; background: linear-gradient(45deg, #10b981, #059669);">Küreyi Zihne Gönder ✨</button>
+
+    <div class="section-instruction" style="margin-bottom: 5px; text-align: center;">Hafıza Çemberin 🌀</div>
+    
+    <!-- 3D Dönen Küre Alanı -->
+    <div class="carousel-container" id="carouselContainer" style="height: 140px;">
+      <div class="carousel-track" id="carouselTrack"></div>
+    </div>
+  </section>
+
+  <!-- 2. SEKME: ANILAR (Fotoğraf Galeri ve Arama) -->
+  <section id="tab-memories" class="tab-content">
+    <div class="daily-photo-card" onclick="triggerPhotoUpload()">
+      <input type="file" id="photoUploadInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+      <div class="photo-overlay" id="photoOverlay">
+        <span>📷 Günün Fotoğrafını Ekle</span>
+      </div>
+      <img id="dailyPhotoImg" src="" alt="Günün Fotoğrafı" style="display:none;">
+    </div>
+
+    <div class="search-bar-container">
+      <input type="text" id="searchInput" placeholder="Zihninde bir anı ara... 🔍" oninput="searchMemories()">
+    </div>
+
+    <div class="memories-feed" id="memoriesFeed"></div>
+  </section>
+
+  <!-- 3. SEKME: GÜNLÜK (KÜRESİZ, SAF YAZI DEFTERİ) -->
+  <section id="tab-diary" class="tab-content">
+    <div class="diary-container" style="height: 100%; display: flex; flex-direction: column;">
+      <h3 style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 8px;">✍️ Sevgili Günlük...</h3>
+      <textarea class="note-input" id="noteInput" style="flex: 1; height: 250px; line-height: 1.6; font-size: 0.95rem;" placeholder="Bugün neler yaşandı Nisa? Gününü defterine yazar gibi uzun uzun buraya dök..."></textarea>
+      
+      <!-- GÜNLÜĞÜ KAYDETME BUTONU -->
+      <button class="submit-btn" id="submitBtn" onclick="saveDiaryEntry()" style="margin-top: 15px;">Günlüğü Zihne Kilitle 📝</button>
+    </div>
+  </section>
+
+  <!-- TAKVİM PENCERESİ MODAL -->
+  <div class="modal" id="calendarModal" onclick="closeCalendarModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="calendar-header">
+        <button onclick="changeMonth(-1)">❮</button>
+        <span id="currentMonthYear">Mayıs 2026</span>
+        <button onclick="changeMonth(1)">❯</button>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+      <button class="modal-close-btn" onclick="closeCalendarModal()">Kapat</button>
+    </div>
+  </div>
+
+  <!-- ANI DETAY GÖSTERİM POP-UP -->
+  <div class="modal" id="memoryModal" onclick="closeMemoryModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-date" id="modalDate">22 Mayıs 2026</div>
+      <p class="modal-text" id="modalText">Anı...</p>
+      <div class="breakdown-title">O Günün Duygu Oranları</div>
+      <div class="modal-breakdown" id="modalBreakdown"></div>
+      <button class="modal-close-btn" onclick="closeMemoryModal()">Kapat</button>
+    </div>
+  </div>
+
+  <!-- 📱 SABİT ALT MENÜ (NAVIGATION BAR) -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('mind', this)">
+      <span class="nav-icon">🔮</span>
+      <span class="nav-label">Zihin</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('memories', this)">
+      <span class="nav-icon">📷</span>
+      <span class="nav-label">Anılar</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('diary', this)">
+      <span class="nav-icon">✍️</span>
+      <span class="nav-label">Günlük</span>
+    </div>
+  </nav>
+
+  <script src="script.js"></script>
+</body>
+</html>

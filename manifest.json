@@ -1,0 +1,16 @@
+{
+  "name": "Riley Duygu Küreleri",
+  "short_name": "Riley",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0a0e29",
+  "theme_color": "#0a0e29",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3067/3067362.png",
+      "sizes": "512 x 512",
+      "type": "image/png"
+    }
+  ]
+}
