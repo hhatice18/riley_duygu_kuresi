@@ -1,142 +1,1687 @@
 <!DOCTYPE html>
-<html lang="tr" data-theme="dark">
+<html lang="tr">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Riley — Zihin Sarayı</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#fce4ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Riley · Zihin Sarayı</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink-soft: #fce4ec;
+    --pink-mid: #f8bbd9;
+    --pink-accent: #f48fb1;
+    --pink-deep: #e91e8c;
+    --white: #ffffff;
+    --cream: #fff9fb;
+    --text-main: #5c2d4a;
+    --text-soft: #a07090;
+    --text-muted: #c8a0b8;
+    --shadow-soft: 0 8px 32px rgba(233,30,140,0.08);
+    --shadow-card: 0 4px 24px rgba(233,30,140,0.10);
+    --radius-lg: 28px;
+    --radius-pill: 50px;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: var(--font-body);
+    background: linear-gradient(175deg, #fce4ec 0%, #fdf2f7 40%, #ffffff 100%);
+    min-height: 100vh;
+    min-height: 100dvh;
+    color: var(--text-main);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Arka plan çiçekler */
+  .bg-flowers {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .bg-flower {
+    position: absolute;
+    font-size: 18px;
+    opacity: 0.18;
+    animation: floatFlower linear infinite;
+  }
+  @keyframes floatFlower {
+    0% { transform: translateY(-30px) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.18; }
+    90% { opacity: 0.18; }
+    100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* APP WRAPPER */
+  #app {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 430px;
+    margin: 0 auto;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* HEADER */
+  .app-header {
+    padding: 18px 24px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .app-logo {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-style: italic;
+    color: var(--text-main);
+    letter-spacing: -0.5px;
+  }
+  .app-logo span { color: var(--pink-accent); }
+  .header-date {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 400;
+    text-align: right;
+    line-height: 1.4;
+  }
+
+  /* PAGE CONTAINER */
+  .pages {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+  .page {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    padding: 8px 20px 120px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(30px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    -webkit-overflow-scrolling: touch;
+  }
+  .page.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(0);
+  }
+  .page.exit-left { transform: translateX(-30px); }
+
+  /* FLOATING TAB BAR */
+  .tab-bar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 40px);
+    max-width: 390px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius-pill);
+    padding: 10px 8px;
+    display: flex;
+    justify-content: space-around;
+    box-shadow: 0 8px 40px rgba(233,30,140,0.14), 0 2px 8px rgba(233,30,140,0.06);
+    z-index: 100;
+    border: 1px solid rgba(255,255,255,0.8);
+  }
+  .tab-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 20px;
+    transition: all 0.25s ease;
+    min-width: 70px;
+  }
+  .tab-btn.active { background: linear-gradient(135deg, var(--pink-soft), var(--pink-mid)); }
+  .tab-btn .tab-icon { font-size: 22px; transition: transform 0.25s ease; }
+  .tab-btn.active .tab-icon { transform: scale(1.15); }
+  .tab-btn .tab-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.3px;
+    transition: color 0.25s ease;
+  }
+  .tab-btn.active .tab-label { color: var(--text-main); }
+
+  /* =================== ZİHİN SAYFASI =================== */
+  .mind-page { display: flex; flex-direction: column; align-items: center; }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 15px;
+    color: var(--text-soft);
+    margin-bottom: 14px;
+    font-style: italic;
+    align-self: flex-start;
+  }
+
+  /* ORB CONTAINER */
+  .orb-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    margin-bottom: 22px;
+  }
+  .orb-wrapper {
+    position: relative;
+    width: 140px;
+    height: 140px;
+  }
+  .orb-ring {
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    background: conic-gradient(var(--pink-accent), var(--pink-mid), var(--pink-soft), var(--pink-accent));
+    opacity: 0.3;
+    animation: spinRing 8s linear infinite;
+  }
+  @keyframes spinRing {
+    to { transform: rotate(360deg); }
+  }
+  .orb-ring-inner {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: white;
+  }
+  #orbCanvas {
+    position: relative;
+    z-index: 2;
+    border-radius: 50%;
+    cursor: crosshair;
+    box-shadow: 0 8px 40px rgba(233,30,140,0.2), inset 0 0 30px rgba(255,255,255,0.4);
+    touch-action: none;
+    display: block;
+  }
+  .orb-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    z-index: 3;
+    pointer-events: none;
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.55) 0%, transparent 60%);
+  }
+
+  .orb-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .orb-percent {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--text-main);
+    line-height: 1;
+  }
+  .orb-label { font-size: 11px; color: var(--text-muted); }
+  .orb-save-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, var(--pink-accent), #f06292);
+    color: white;
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 10px 22px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(233,30,140,0.25);
+    transition: all 0.2s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .orb-save-btn.visible { opacity: 1; pointer-events: all; }
+  .orb-save-btn:active { transform: scale(0.96); }
+
+  /* EMOTION BRUSHES */
+  .brush-section { width: 100%; margin-bottom: 20px; }
+  .brush-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .brush-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 4px;
+    border: 2.5px solid transparent;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.7);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    position: relative;
+  }
+  .brush-btn.selected {
+    border-color: currentColor;
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+  }
+  .brush-btn .b-emoji { font-size: 20px; }
+  .brush-btn .b-name {
+    font-size: 8.5px;
+    font-weight: 500;
+    color: var(--text-soft);
+    text-align: center;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .brush-btn .b-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 1px;
+  }
+  .brush-btn.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 3px; right: 4px;
+    font-size: 9px;
+    color: var(--text-soft);
+  }
+
+  /* MEMORY CAROUSEL */
+  .carousel-section { width: 100%; }
+  .carousel-track {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 8px 4px 12px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-snap-type: x mandatory;
+  }
+  .carousel-track::-webkit-scrollbar { display: none; }
+  .memory-card {
+    flex-shrink: 0;
+    width: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    scroll-snap-align: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  .memory-card:active { transform: scale(0.95); }
+  .memory-orb-mini {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    overflow: hidden;
+    border: 3px solid rgba(255,255,255,0.9);
+  }
+  .memory-orb-mini canvas { width: 100%; height: 100%; }
+  .memory-date { font-size: 10px; color: var(--text-muted); text-align: center; }
+  .memory-emotion-dots {
+    display: flex; gap: 3px; flex-wrap: wrap;
+    justify-content: center;
+    max-width: 72px;
+  }
+  .emotion-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+  /* =================== ANILAR SAYFASI =================== */
+  .memories-page { display: flex; flex-direction: column; gap: 16px; }
+
+  .search-bar {
+    background: rgba(255,255,255,0.85);
+    border: 1.5px solid var(--pink-mid);
+    border-radius: var(--radius-pill);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: var(--shadow-soft);
+  }
+  .search-bar input {
+    border: none; background: none; outline: none;
+    font-family: var(--font-body);
+    font-size: 14px; color: var(--text-main);
+    flex: 1;
+  }
+  .search-bar input::placeholder { color: var(--text-muted); }
+  .search-icon { color: var(--text-muted); font-size: 16px; }
+
+  .memory-detail-card {
+    background: rgba(255,255,255,0.9);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid rgba(255,255,255,0.9);
+  }
+  .memory-detail-card.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 30px 20px;
+    text-align: center;
+  }
+  .empty-icon { font-size: 40px; opacity: 0.5; }
+  .empty-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+  .memory-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .detail-orb { width: 64px; height: 64px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+  .detail-orb canvas { width: 100%; height: 100%; }
+  .detail-meta { flex: 1; }
+  .detail-date { font-family: var(--font-display); font-size: 16px; color: var(--text-main); }
+  .detail-summary { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+  .emotion-bars { display: flex; flex-direction: column; gap: 6px; }
+  .emotion-bar-row { display: flex; align-items: center; gap: 8px; }
+  .emotion-bar-label { font-size: 11px; color: var(--text-soft); width: 60px; flex-shrink: 0; }
+  .emotion-bar-track {
+    flex: 1; height: 6px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 3px; overflow: hidden;
+  }
+  .emotion-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+  .emotion-bar-pct { font-size: 10px; color: var(--text-muted); width: 30px; text-align: right; flex-shrink: 0; }
+
+  .memory-journal-text {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--pink-soft);
+    font-size: 13px;
+    color: var(--text-soft);
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  .photo-card {
+    background: rgba(255,255,255,0.9);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    box-shadow: var(--shadow-card);
+    border: 2px dashed var(--pink-mid);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 100px;
+    justify-content: center;
+  }
+  .photo-card:active { transform: scale(0.98); }
+  .photo-card .photo-preview { width: 100%; border-radius: 14px; max-height: 180px; object-fit: cover; display: none; }
+  .photo-card .photo-placeholder { text-align: center; }
+  .photo-card .photo-icon { font-size: 28px; }
+  .photo-card .photo-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  #photoInput { display: none; }
+
+  /* =================== GÜNLÜK SAYFASI =================== */
+  .journal-page { display: flex; flex-direction: column; }
+
+  .journal-header {
+    display: flex; align-items: baseline; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .journal-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-style: italic;
+    color: var(--text-main);
+  }
+  .journal-date-tag {
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--pink-soft);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .journal-card {
+    background: rgba(255,255,255,0.88);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid rgba(255,255,255,0.9);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 300px;
+  }
+  .journal-mood-row {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .journal-mood-chip {
+    display: flex; align-items: center; gap: 5px;
+    background: var(--pink-soft);
+    border-radius: var(--radius-pill);
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--text-main);
+  }
+  .journal-mood-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .journal-textarea {
+    flex: 1;
+    min-height: 250px;
+    border: none;
+    background: none;
+    outline: none;
+    resize: none;
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--text-main);
+    line-height: 1.9;
+    caret-color: var(--pink-accent);
+  }
+  .journal-textarea::placeholder { color: var(--text-muted); font-style: italic; }
+
+  .journal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid var(--pink-soft);
+  }
+  .journal-char-count { font-size: 11px; color: var(--text-muted); }
+  .journal-save-btn {
+    background: linear-gradient(135deg, var(--pink-accent), #f06292);
+    color: white;
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 9px 20px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(233,30,140,0.22);
+    transition: all 0.2s ease;
+  }
+  .journal-save-btn:active { transform: scale(0.96); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(255,255,255,0.95);
+    color: var(--text-main);
+    padding: 10px 22px;
+    border-radius: var(--radius-pill);
+    font-size: 13px;
+    box-shadow: 0 8px 30px rgba(233,30,140,0.15);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    border: 1px solid var(--pink-mid);
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* SCROLLBAR */
+  .page::-webkit-scrollbar { width: 3px; }
+  .page::-webkit-scrollbar-track { background: transparent; }
+  .page::-webkit-scrollbar-thumb { background: var(--pink-mid); border-radius: 2px; }
+
+  /* =================== TAKVİM =================== */
+  .calendar-card {
+    background: rgba(255,255,255,0.9);
+    border-radius: var(--radius-lg);
+    padding: 18px 16px 14px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid rgba(255,255,255,0.95);
+  }
+  .cal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .cal-nav-btn {
+    background: var(--pink-soft); border: none; border-radius: 12px;
+    width: 32px; height: 32px; cursor: pointer; font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-main); transition: all 0.2s;
+  }
+  .cal-nav-btn:active { transform: scale(0.92); }
+  .cal-month-label {
+    font-family: var(--font-display); font-style: italic;
+    font-size: 17px; color: var(--text-main);
+  }
+  .cal-weekdays {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 6px;
+  }
+  .cal-wd {
+    text-align: center; font-size: 10px;
+    color: var(--text-muted); font-weight: 500;
+    padding: 4px 0;
+  }
+  .cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 12px; cursor: pointer;
+    position: relative; transition: all 0.2s;
+    border: 2px solid transparent;
+  }
+  .cal-day:empty { pointer-events: none; }
+  .cal-day.today {
+    border-color: var(--pink-accent);
+    font-weight: 600;
+  }
+  .cal-day.has-memory {
+    color: white;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .cal-day.selected {
+    box-shadow: 0 0 0 3px rgba(244,143,177,0.5);
+    transform: scale(1.12);
+  }
+  .cal-day.no-memory { color: var(--text-muted); }
+  .cal-day.other-month { opacity: 0.25; pointer-events: none; }
+  .cal-day-num { font-size: 11px; line-height: 1; }
+  .cal-day-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: rgba(255,255,255,0.8);
+    margin-top: 1px;
+  }
+
+  /* =================== ONBOARDING =================== */
+  #onboarding {
+    position: fixed; inset: 0; z-index: 500;
+    background: linear-gradient(175deg, #fce4ec 0%, #fdf2f7 50%, #fff 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px 32px; gap: 0;
+  }
+  #onboarding.hidden { display: none; }
+  .ob-logo { font-family: var(--font-display); font-size: 48px; font-style: italic; color: var(--text-main); letter-spacing: -1px; margin-bottom: 6px; position: relative; z-index: 1; }
+  .ob-logo span { color: var(--pink-accent); }
+  .ob-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 40px; text-align: center; line-height: 1.6; position: relative; z-index: 1; }
+  .ob-step { display: none; flex-direction: column; align-items: center; gap: 18px; width: 100%; position: relative; z-index: 1; }
+  .ob-step.active { display: flex; }
+  .ob-step-label { font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--text-main); text-align: center; }
+  .ob-input { width: 100%; background: rgba(255,255,255,0.85); border: 1.5px solid var(--pink-mid); border-radius: 18px; padding: 14px 18px; font-family: var(--font-body); font-size: 16px; color: var(--text-main); outline: none; transition: border-color 0.2s; text-align: center; }
+  .ob-input:focus { border-color: var(--pink-accent); }
+  .ob-input::placeholder { color: var(--text-muted); }
+  .ob-avatar-grid { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .ob-avatar-btn { width: 52px; height: 52px; border-radius: 50%; border: 3px solid transparent; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; background: rgba(255,255,255,0.8); box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+  .ob-avatar-btn.selected { border-color: var(--pink-accent); transform: scale(1.15); box-shadow: 0 4px 16px rgba(244,143,177,0.4); }
+  .ob-textarea { width: 100%; background: rgba(255,255,255,0.85); border: 1.5px solid var(--pink-mid); border-radius: 18px; padding: 14px 18px; font-family: var(--font-body); font-size: 14px; color: var(--text-main); outline: none; resize: none; min-height: 90px; line-height: 1.7; transition: border-color 0.2s; }
+  .ob-textarea:focus { border-color: var(--pink-accent); }
+  .ob-textarea::placeholder { color: var(--text-muted); font-style: italic; }
+  .ob-btn { background: linear-gradient(135deg, var(--pink-accent), #f06292); color: white; border: none; border-radius: var(--radius-pill); padding: 14px 40px; font-family: var(--font-body); font-size: 15px; font-weight: 500; cursor: pointer; box-shadow: 0 6px 20px rgba(233,30,140,0.25); transition: all 0.2s ease; width: 100%; }
+  .ob-btn:active { transform: scale(0.97); }
+  .ob-dots { display: flex; gap: 8px; margin-top: 8px; }
+  .ob-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--pink-mid); transition: all 0.3s; }
+  .ob-dot.active { background: var(--pink-accent); width: 22px; border-radius: 4px; }
+
+  /* =================== PROFİL SAYFASI =================== */
+  .profile-page { display: flex; flex-direction: column; gap: 16px; }
+  .profile-hero { background: rgba(255,255,255,0.9); border-radius: var(--radius-lg); padding: 24px 20px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow-card); border: 1px solid rgba(255,255,255,0.95); }
+  .profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--pink-soft); display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 4px 16px rgba(244,143,177,0.3); flex-shrink: 0; }
+  .profile-info { flex: 1; }
+  .profile-name { font-family: var(--font-display); font-size: 20px; color: var(--text-main); line-height: 1.2; }
+  .profile-bday { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+  .profile-bio { font-size: 13px; color: var(--text-soft); margin-top: 6px; line-height: 1.5; font-style: italic; }
+  .profile-edit-btn { background: var(--pink-soft); border: none; border-radius: 12px; padding: 7px 14px; font-size: 12px; color: var(--text-soft); cursor: pointer; transition: all 0.2s; flex-shrink: 0; align-self: flex-start; }
+  .profile-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .profile-stat { background: rgba(255,255,255,0.85); border-radius: 20px; padding: 14px 10px; text-align: center; box-shadow: var(--shadow-soft); border: 1px solid rgba(255,255,255,0.9); }
+  .stat-num { font-family: var(--font-display); font-size: 22px; color: var(--text-main); font-weight: 600; }
+  .stat-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .profile-section-title { font-family: var(--font-display); font-style: italic; font-size: 15px; color: var(--text-soft); }
+  .notif-card { background: rgba(255,255,255,0.9); border-radius: var(--radius-lg); padding: 18px 20px; box-shadow: var(--shadow-card); border: 1px solid rgba(255,255,255,0.95); display: flex; flex-direction: column; gap: 14px; }
+  .notif-row { display: flex; align-items: center; justify-content: space-between; }
+  .notif-info { display: flex; flex-direction: column; gap: 2px; }
+  .notif-title { font-size: 14px; color: var(--text-main); font-weight: 500; }
+  .notif-sub { font-size: 11px; color: var(--text-muted); }
+  .toggle { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: var(--pink-mid); border-radius: 13px; cursor: pointer; transition: background 0.25s; }
+  .toggle-slider::before { content: ''; position: absolute; width: 20px; height: 20px; border-radius: 50%; background: white; left: 3px; top: 3px; transition: transform 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+  .toggle input:checked + .toggle-slider { background: var(--pink-accent); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+  .notif-time-input { background: var(--pink-soft); border: none; border-radius: 10px; padding: 6px 12px; font-family: var(--font-body); font-size: 13px; color: var(--text-main); outline: none; cursor: pointer; }
+  .notif-divider { height: 1px; background: var(--pink-soft); }
+  .profile-bottom-btn { background: rgba(255,255,255,0.85); border: 1.5px solid var(--pink-mid); border-radius: var(--radius-pill); padding: 12px; text-align: center; font-size: 13px; color: var(--text-soft); cursor: pointer; transition: all 0.2s; }
+
+  /* BİLDİRİM BANNER */
+  .notif-banner { position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-140px); width: calc(100% - 40px); max-width: 390px; background: rgba(255,255,255,0.97); border-radius: 20px; padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px; box-shadow: 0 8px 40px rgba(233,30,140,0.18); border: 1px solid var(--pink-mid); z-index: 900; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+  .notif-banner.show { transform: translateX(-50%) translateY(0); }
+  .notif-banner-icon { font-size: 28px; flex-shrink: 0; }
+  .notif-banner-body { flex: 1; }
+  .notif-banner-title { font-size: 13px; font-weight: 500; color: var(--text-main); }
+  .notif-banner-text { font-size: 12px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+  .notif-banner-close { font-size: 16px; color: var(--text-muted); cursor: pointer; flex-shrink: 0; line-height: 1; }
+</style>
 </head>
 <body>
 
-  <!-- 👤 PROFİL ADI SORMA EKRANI -->
-  <div class="modal" id="profileSetupModal" style="z-index: 999;">
-    <div class="modal-content" style="max-width: 290px;">
-      <div style="font-size: 2.5rem; margin-bottom: 10px;">🧠</div>
-      <h3 style="margin-bottom: 10px; font-weight: 700;">Zihin Sarayına Hoş Geldin!</h3>
-      <p style="font-size: 0.78rem; opacity: 0.6; margin-bottom: 15px;">Uygulamanın sana adınla seslenebilmesi için lütfen ismini yazar mısın? ✨</p>
-      <input type="text" id="usernameInput" placeholder="Adın nedir?..." style="width: 100%; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0 12px; color: white; font-family: inherit; text-align: center; font-size: 0.9rem; outline: none; margin-bottom: 15px;">
-      <button class="submit-btn" style="opacity: 1; pointer-events: auto; height: 40px;" onclick="saveUserProfile()">Zihnimi Oluştur 🔮</button>
-    </div>
+<!-- ONBOARDİNG -->
+<div id="onboarding">
+  <div class="ob-logo">Riley<span>.</span></div>
+  <div class="ob-subtitle">Zihninin sarayına hoş geldin.<br>Seni biraz tanıyalım 🌸</div>
+  <div class="ob-step active" id="ob-step-1">
+    <div class="ob-step-label">Adın ne?</div>
+    <div class="ob-avatar-grid" id="obAvatarGrid"></div>
+    <input class="ob-input" id="obName" type="text" placeholder="Adını yaz..." maxlength="30">
+    <button class="ob-btn" onclick="obNext(1)">Devam et ✦</button>
   </div>
+  <div class="ob-step" id="ob-step-2">
+    <div class="ob-step-label">Doğum tarihin?</div>
+    <input class="ob-input" id="obBday" type="date">
+    <button class="ob-btn" onclick="obNext(2)">Devam et ✦</button>
+  </div>
+  <div class="ob-step" id="ob-step-3">
+    <div class="ob-step-label">Kendini birkaç kelimeyle anlat</div>
+    <textarea class="ob-textarea" id="obBio" placeholder="Hayalperest, kahvesever, gececi biri... 🌙" maxlength="120"></textarea>
+    <button class="ob-btn" onclick="obFinish()">Riley'e başla 🌸</button>
+  </div>
+  <div class="ob-dots">
+    <div class="ob-dot active" id="od1"></div>
+    <div class="ob-dot" id="od2"></div>
+    <div class="ob-dot" id="od3"></div>
+  </div>
+</div>
 
-  <!-- ÜST MENÜ BAR -->
+<!-- BİLDİRİM BANNER -->
+<div class="notif-banner" id="notifBanner">
+  <div class="notif-banner-icon" id="notifIcon">🌸</div>
+  <div class="notif-banner-body">
+    <div class="notif-banner-title" id="notifTitle"></div>
+    <div class="notif-banner-text" id="notifText"></div>
+  </div>
+  <div class="notif-banner-close" onclick="closeNotifBanner()">✕</div>
+</div>
+
+<div class="bg-flowers" id="bgFlowers"></div>
+
+<div id="app">
   <header class="app-header">
-    <div class="header-left">
-      <div class="app-title" id="appMainTitle">🧠 Riley<span>.</span></div>
-      <div class="current-selected-date" id="headerDateLabel">Bugün</div>
-    </div>
-    <div class="header-right">
-      <button class="icon-btn" onclick="openCalendarModal()">📅</button>
-      <button class="icon-btn" onclick="resetProfileName()" title="Profili Değiştir">👤</button>
-      <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
-    </div>
+    <div class="app-logo">Riley<span>.</span></div>
+    <div class="header-date" id="headerDate"></div>
   </header>
 
-  <!-- ════════════ SEKMELER (TAB SECTIONS) ════════════ -->
+  <div class="pages">
+    <!-- ZİHİN -->
+    <div class="page active" id="page-mind">
+      <div class="mind-page">
 
-  <!-- 1. SEKME: ZİHİN (SADECE BOYAMA KÜRESİ VE 3D ÇEMBER) -->
-  <section id="tab-mind" class="tab-content active">
-    <div class="canvas-wrapper" style="margin-top: 0;">
-      <div class="canvas-help-text">Fırça seç, parmağınla küreni boya 🎨</div>
-      
-      <!-- Boyama Küresi -->
-      <div class="orb-canvas-container" id="orbContainer" style="margin: 10px 0;">
-        <div class="orb-highlight"></div>
-        <canvas id="orbCanvas" width="140" height="140"></canvas>
+        <div class="orb-section">
+          <div class="orb-wrapper">
+            <div class="orb-ring"></div>
+            <div class="orb-ring-inner"></div>
+            <canvas id="orbCanvas" width="140" height="140"></canvas>
+            <div class="orb-glow"></div>
+          </div>
+          <div class="orb-stats">
+            <div class="orb-percent" id="orbPercent">0%</div>
+            <div class="orb-label">Küreyi boya, duygularını keşfet</div>
+          </div>
+          <button class="orb-save-btn" id="orbSaveBtn" onclick="saveOrb()">
+            ✦ Bugünü Kaydet
+          </button>
+        </div>
+
+        <div class="brush-section">
+          <div class="section-title">Duygu fırçaları</div>
+          <div class="brush-grid" id="brushGrid"></div>
+        </div>
+
+        <div class="carousel-section">
+          <div class="section-title">Hafıza çemberi</div>
+          <div class="carousel-track" id="carouselTrack"></div>
+        </div>
       </div>
+    </div>
 
-      <!-- Durum Göstergeleri -->
-      <div class="brush-status" style="width: 100%; justify-content: center; gap: 15px; margin-bottom: 5px;">
-        <span id="activeBrushLabel" style="font-size:0.8rem;">🖌 ... Fırça Seçin ...</span>
-        <span class="total-badge" id="totalBadge">%0 / %100</span>
-        <button class="clear-btn" onclick="clearCanvas()" style="text-decoration: underline; font-size:0.75rem;">Sıfırla 🧼</button>
+    <!-- ANILAR -->
+    <div class="page" id="page-memories">
+      <div class="memories-page">
+        <div class="section-title" style="margin-bottom:0">Geçmiş günlerim</div>
+
+        <!-- TAKVİM -->
+        <div class="calendar-card">
+          <div class="cal-header">
+            <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+            <div class="cal-month-label" id="calMonthLabel"></div>
+            <button class="cal-nav-btn" onclick="calNext()">›</button>
+          </div>
+          <div class="cal-weekdays">
+            <div class="cal-wd">Pt</div><div class="cal-wd">Sa</div>
+            <div class="cal-wd">Ça</div><div class="cal-wd">Pe</div>
+            <div class="cal-wd">Cu</div><div class="cal-wd">Ct</div>
+            <div class="cal-wd">Pz</div>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+
+        <div id="memoryDetailArea"></div>
+
+        <div class="photo-card" onclick="document.getElementById('photoInput').click()">
+          <img class="photo-preview" id="photoPreview">
+          <div class="photo-placeholder">
+            <div class="photo-icon">📷</div>
+            <div class="photo-hint">Günün fotoğrafını ekle</div>
+          </div>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(this)">
       </div>
     </div>
 
-    <!-- 20 Duygulu Fırça Şeridi -->
-    <div class="emotion-scroll-wrapper" id="brushWrapper" style="margin: 5px 0 10px;"></div>
+    <!-- GÜNLÜK -->
+    <div class="page" id="page-journal">
+      <div class="journal-page">
+        <div class="journal-header">
+          <div class="journal-title">Sevgili Günlük...</div>
+          <div class="journal-date-tag" id="journalDateTag"></div>
+        </div>
 
-    <!-- 🔮 KÜREYİ KAYDETME BUTONU -->
-    <button class="submit-btn" id="submitOrbBtn" onclick="saveOnlyOrb()" style="margin-bottom: 15px; background: linear-gradient(45deg, #10b981, #059669);">Küreyi Zihne Gönder ✨</button>
-
-    <div class="section-instruction" style="margin-bottom: 5px; text-align: center;">Hafıza Çemberin 🌀</div>
-    
-    <!-- 3D Dönen Küre Alanı -->
-    <div class="carousel-container" id="carouselContainer" style="height: 140px;">
-      <div class="carousel-track" id="carouselTrack"></div>
-    </div>
-  </section>
-
-  <!-- 2. SEKME: ANILAR (Fotoğraf Galeri ve Arama) -->
-  <section id="tab-memories" class="tab-content">
-    <div class="daily-photo-card" onclick="triggerPhotoUpload()">
-      <input type="file" id="photoUploadInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
-      <div class="photo-overlay" id="photoOverlay">
-        <span>📷 Günün Fotoğrafını Ekle</span>
+        <div class="journal-card">
+          <div class="journal-mood-row" id="journalMoodRow">
+            <span style="font-size:12px;color:var(--text-muted)">Henüz duygu seçilmedi · Önce küreyi boya 🎨</span>
+          </div>
+          <textarea class="journal-textarea" id="journalTextarea"
+            placeholder="Bugün neler hissettin? İçini dök, bu sayfa yalnızca senin..."
+            oninput="updateCharCount()"></textarea>
+          <div class="journal-footer">
+            <span class="journal-char-count" id="charCount">0 harf</span>
+            <button class="journal-save-btn" onclick="saveJournal()">Kaydet ✦</button>
+          </div>
+        </div>
       </div>
-      <img id="dailyPhotoImg" src="" alt="Günün Fotoğrafı" style="display:none;">
     </div>
 
-    <div class="search-bar-container">
-      <input type="text" id="searchInput" placeholder="Zihninde bir anı ara... 🔍" oninput="searchMemories()">
-    </div>
+    <!-- PROFİL -->
+    <div class="page" id="page-profile">
+      <div class="profile-page">
 
-    <div class="memories-feed" id="memoriesFeed"></div>
-  </section>
+        <div class="profile-hero">
+          <div class="profile-avatar" id="profileAvatarDisplay">🪷</div>
+          <div class="profile-info">
+            <div class="profile-name" id="profileNameDisplay">Merhaba!</div>
+            <div class="profile-bday" id="profileBdayDisplay"></div>
+            <div class="profile-bio" id="profileBioDisplay"></div>
+          </div>
+          <button class="profile-edit-btn" onclick="openEditProfile()">✏️ Düzenle</button>
+        </div>
 
-  <!-- 3. SEKME: GÜNLÜK (KÜRESİZ, SAF YAZI DEFTERİ) -->
-  <section id="tab-diary" class="tab-content">
-    <div class="diary-container" style="height: 100%; display: flex; flex-direction: column;">
-      <h3 style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 8px;">✍️ Sevgili Günlük...</h3>
-      <textarea class="note-input" id="noteInput" style="flex: 1; height: 250px; line-height: 1.6; font-size: 0.95rem;" placeholder="Bugün neler yaşandı Nisa? Gününü defterine yazar gibi uzun uzun buraya dök..."></textarea>
-      
-      <!-- GÜNLÜĞÜ KAYDETME BUTONU -->
-      <button class="submit-btn" id="submitBtn" onclick="saveDiaryEntry()" style="margin-top: 15px;">Günlüğü Zihne Kilitle 📝</button>
-    </div>
-  </section>
+        <div class="profile-stats-row">
+          <div class="profile-stat">
+            <div class="stat-num" id="statDays">0</div>
+            <div class="stat-label">Gün kaydedildi</div>
+          </div>
+          <div class="profile-stat">
+            <div class="stat-num" id="statStreak">0</div>
+            <div class="stat-label">Gün serisi 🔥</div>
+          </div>
+          <div class="profile-stat">
+            <div class="stat-num" id="statEmotions">0</div>
+            <div class="stat-label">Farklı duygu</div>
+          </div>
+        </div>
 
-  <!-- TAKVİM PENCERESİ MODAL -->
-  <div class="modal" id="calendarModal" onclick="closeCalendarModal()">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <div class="calendar-header">
-        <button onclick="changeMonth(-1)">❮</button>
-        <span id="currentMonthYear">Mayıs 2026</span>
-        <button onclick="changeMonth(1)">❯</button>
+        <div class="profile-section-title">Bildirimler</div>
+
+        <div class="notif-card">
+          <div class="notif-row">
+            <div class="notif-info">
+              <div class="notif-title">🌙 Gece küre hatırlatması</div>
+              <div class="notif-sub">Günü kapatmadan duygularını boyamayı unutma</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="toggleNight" onchange="saveNotifSettings()" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="notif-row" style="padding-left:4px">
+            <div class="notif-info">
+              <div class="notif-sub">Hatırlatma saati</div>
+            </div>
+            <input class="notif-time-input" type="time" id="notifNightTime" value="22:00" onchange="saveNotifSettings()">
+          </div>
+
+          <div class="notif-divider"></div>
+
+          <div class="notif-row">
+            <div class="notif-info">
+              <div class="notif-title">☀️ Sabah motivasyonu</div>
+              <div class="notif-sub">Güne güzel bir mesajla başla</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="toggleMorning" onchange="saveNotifSettings()" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="notif-row" style="padding-left:4px">
+            <div class="notif-info">
+              <div class="notif-sub">Hatırlatma saati</div>
+            </div>
+            <input class="notif-time-input" type="time" id="notifMorningTime" value="08:30" onchange="saveNotifSettings()">
+          </div>
+        </div>
+
+        <div class="profile-bottom-btn" onclick="resetProfile()">
+          Profili Sıfırla
+        </div>
+
       </div>
-      <div class="calendar-grid" id="calendarGrid"></div>
-      <button class="modal-close-btn" onclick="closeCalendarModal()">Kapat</button>
     </div>
   </div>
 
-  <!-- ANI DETAY GÖSTERİM POP-UP -->
-  <div class="modal" id="memoryModal" onclick="closeMemoryModal()">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <div class="modal-date" id="modalDate">22 Mayıs 2026</div>
-      <p class="modal-text" id="modalText">Anı...</p>
-      <div class="breakdown-title">O Günün Duygu Oranları</div>
-      <div class="modal-breakdown" id="modalBreakdown"></div>
-      <button class="modal-close-btn" onclick="closeMemoryModal()">Kapat</button>
-    </div>
-  </div>
-
-  <!-- 📱 SABİT ALT MENÜ (NAVIGATION BAR) -->
-  <nav class="bottom-nav">
-    <div class="nav-item active" onclick="switchTab('mind', this)">
-      <span class="nav-icon">🔮</span>
-      <span class="nav-label">Zihin</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('memories', this)">
-      <span class="nav-icon">📷</span>
-      <span class="nav-label">Anılar</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('diary', this)">
-      <span class="nav-icon">✍️</span>
-      <span class="nav-label">Günlük</span>
-    </div>
+  <!-- TAB BAR -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('mind', this)">
+      <span class="tab-icon">🌸</span>
+      <span class="tab-label">Zihin</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('memories', this)">
+      <span class="tab-icon">✨</span>
+      <span class="tab-label">Anılar</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('journal', this)">
+      <span class="tab-icon">📖</span>
+      <span class="tab-label">Günlük</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('profile', this)">
+      <span class="tab-icon" id="tabProfileIcon">🪷</span>
+      <span class="tab-label">Profil</span>
+    </button>
   </nav>
+</div>
 
-  <script src="script.js"></script>
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== DATA =====================
+const EMOTIONS = [
+  { id:'joy',      name:'Neşe',        emoji:'🟡', color:'#FFD700', hex:'#FFD700' },
+  { id:'sadness',  name:'Üzüntü',      emoji:'🔵', color:'#5B9BD5', hex:'#5B9BD5' },
+  { id:'anger',    name:'Öfke',        emoji:'🔴', color:'#E53935', hex:'#E53935' },
+  { id:'disgust',  name:'Tiksinti',    emoji:'🟢', color:'#43A047', hex:'#43A047' },
+  { id:'fear',     name:'Korku',       emoji:'🟣', color:'#9C27B0', hex:'#9C27B0' },
+  { id:'anxiety',  name:'Kaygı',       emoji:'🟠', color:'#FF7043', hex:'#FF7043' },
+  { id:'jealousy', name:'Kıskançlık',  emoji:'🩵', color:'#00BCD4', hex:'#00BCD4' },
+  { id:'shame',    name:'Utanç',       emoji:'🩷', color:'#F48FB1', hex:'#F48FB1' },
+  { id:'boredom',  name:'Bıkkınlık',   emoji:'💜', color:'#7B1FA2', hex:'#7B1FA2' },
+  { id:'peace',    name:'Huzur',       emoji:'🤍', color:'#E0E0E0', hex:'#E0E0E0' },
+  { id:'trust',    name:'Güven',       emoji:'💙', color:'#1565C0', hex:'#1565C0' },
+  { id:'hope',     name:'Umut',        emoji:'💚', color:'#81C784', hex:'#81C784' },
+  { id:'love',     name:'Sevgi',       emoji:'❤️', color:'#C62828', hex:'#C62828' },
+  { id:'excite',   name:'Heyecan',     emoji:'💛', color:'#FFC107', hex:'#FFC107' },
+  { id:'lonely',   name:'Yalnızlık',   emoji:'🖤', color:'#424242', hex:'#424242' },
+  { id:'guilt',    name:'Suçluluk',    emoji:'🤎', color:'#795548', hex:'#795548' },
+  { id:'wonder',   name:'Hayranlık',   emoji:'🌸', color:'#CE93D8', hex:'#CE93D8' },
+  { id:'indecise', name:'Kararsızlık', emoji:'🩶', color:'#9E9E9E', hex:'#9E9E9E' },
+  { id:'pride',    name:'Gurur',       emoji:'🏅', color:'#FF8F00', hex:'#FF8F00' },
+  { id:'longing',  name:'Özlem',       emoji:'💐', color:'#9575CD', hex:'#9575CD' },
+];
+
+let selectedBrush = null;
+let orbFillPercent = 0;
+let isDrawing = false;
+let orbEmotionData = {}; // {emotionId: strokeCount}
+let savedMemories = JSON.parse(localStorage.getItem('riley_memories') || '[]');
+let todayJournal = '';
+let currentPageId = 'mind';
+let userProfile = JSON.parse(localStorage.getItem('riley_profile') || 'null');
+let notifSettings = JSON.parse(localStorage.getItem('riley_notif') || '{"night":true,"nightTime":"22:00","morning":true,"morningTime":"08:30"}');
+
+const AVATARS = ['🌸','🌷','🌻','🦋','🐝','🌙','⭐','🌈','🍀','🦄'];
+
+// ===================== INIT =====================
+document.addEventListener('DOMContentLoaded', () => {
+  setDates();
+  spawnFlowers();
+  buildBrushGrid();
+  initOrb();
+  renderCarousel();
+  loadJournalState();
+  renderMemoriesPage();
+  buildAvatarGrid();
+
+  if (userProfile) {
+    document.getElementById('onboarding').classList.add('hidden');
+    applyProfile();
+    startNotifScheduler();
+  }
+});
+
+function setDates() {
+  const now = new Date();
+  const opts = { weekday:'long', day:'numeric', month:'long' };
+  const d = now.toLocaleDateString('tr-TR', opts);
+  document.getElementById('headerDate').innerHTML = d.replace(',','<br>');
+  document.getElementById('journalDateTag').textContent = now.toLocaleDateString('tr-TR', { day:'numeric', month:'long', year:'numeric' });
+}
+
+// ===================== FLOWERS =====================
+function spawnFlowers() {
+  const container = document.getElementById('bgFlowers');
+  const flowers = ['🌸','🌼','✿','❀','⚘','🌷'];
+  for (let i = 0; i < 14; i++) {
+    const el = document.createElement('div');
+    el.className = 'bg-flower';
+    el.textContent = flowers[Math.floor(Math.random() * flowers.length)];
+    el.style.left = Math.random() * 100 + '%';
+    el.style.top = Math.random() * 100 + '%';
+    const dur = 18 + Math.random() * 20;
+    const delay = Math.random() * -dur;
+    el.style.animation = `floatFlower ${dur}s ${delay}s linear infinite`;
+    el.style.fontSize = (12 + Math.random() * 14) + 'px';
+    container.appendChild(el);
+  }
+}
+
+// ===================== BRUSH GRID =====================
+function buildBrushGrid() {
+  const grid = document.getElementById('brushGrid');
+  EMOTIONS.forEach(em => {
+    const btn = document.createElement('button');
+    btn.className = 'brush-btn';
+    btn.dataset.id = em.id;
+    btn.style.color = em.color;
+    btn.innerHTML = `
+      <span class="b-emoji">${em.emoji}</span>
+      <span class="b-name">${em.name}</span>
+      <span class="b-dot" style="background:${em.color}"></span>
+    `;
+    btn.addEventListener('click', () => selectBrush(em, btn));
+    grid.appendChild(btn);
+  });
+}
+
+function selectBrush(em, btn) {
+  document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedBrush = em;
+}
+
+// ===================== ORB CANVAS =====================
+const orbCanvas = document.getElementById('orbCanvas');
+const ctx = orbCanvas.getContext('2d');
+const ORB_R = 70;
+const ORB_CX = 70, ORB_CY = 70;
+
+// Offscreen smoke layer — renkler burada birikir, blur CSS ile gelir
+const smokeCanvas = document.createElement('canvas');
+smokeCanvas.width = 140; smokeCanvas.height = 140;
+const sCtx = smokeCanvas.getContext('2d');
+
+function initOrb() {
+  // Smoke layer temizle
+  sCtx.clearRect(0, 0, 140, 140);
+  redrawOrb();
+}
+
+function redrawOrb() {
+  ctx.clearRect(0, 0, 140, 140);
+
+  // 1. Beyaz zemin
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(ORB_CX, ORB_CY, ORB_R, 0, Math.PI * 2);
+  ctx.fillStyle = '#fff8fb';
+  ctx.fill();
+  ctx.restore();
+
+  // 2. Smoke layer'ı daire clip'li üstüne bas
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(ORB_CX, ORB_CY, ORB_R, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.filter = 'blur(14px) saturate(1.4)';
+  ctx.drawImage(smokeCanvas, 0, 0);
+  ctx.filter = 'none';
+  ctx.restore();
+
+  // 3. Üst parıltı (highlight)
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(ORB_CX, ORB_CY, ORB_R, 0, Math.PI * 2);
+  ctx.clip();
+  const glow = ctx.createRadialGradient(52, 45, 0, 52, 45, 55);
+  glow.addColorStop(0, 'rgba(255,255,255,0.52)');
+  glow.addColorStop(0.5, 'rgba(255,255,255,0.10)');
+  glow.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, 140, 140);
+  ctx.restore();
+}
+
+function getEventPos(e, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  if (e.touches) {
+    return {
+      x: (e.touches[0].clientX - rect.left) * scaleX,
+      y: (e.touches[0].clientY - rect.top) * scaleY
+    };
+  }
+  return {
+    x: (e.clientX - rect.left) * scaleX,
+    y: (e.clientY - rect.top) * scaleY
+  };
+}
+
+function inCircle(x, y) {
+  const dx = x - ORB_CX, dy = y - ORB_CY;
+  return dx * dx + dy * dy <= ORB_R * ORB_R;
+}
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return {r,g,b};
+}
+
+function paintAt(x, y) {
+  if (!selectedBrush || !inCircle(x, y)) return;
+
+  const {r,g,b} = hexToRgb(selectedBrush.color);
+
+  // Smoke layer'a küçük, çok düşük alpha'lı leke ekle
+  // Birden fazla katman → renk yavaş birikir, çamurlaşmaz
+  for (let i = 0; i < 3; i++) {
+    const jx = x + (Math.random()-0.5)*10;
+    const jy = y + (Math.random()-0.5)*10;
+    const radius = 22 + Math.random() * 16;
+
+    const grad = sCtx.createRadialGradient(jx, jy, 0, jx, jy, radius);
+    grad.addColorStop(0,   `rgba(${r},${g},${b},0.28)`);
+    grad.addColorStop(0.4, `rgba(${r},${g},${b},0.12)`);
+    grad.addColorStop(1,   `rgba(${r},${g},${b},0)`);
+
+    sCtx.globalCompositeOperation = 'source-over';
+    sCtx.fillStyle = grad;
+    sCtx.beginPath();
+    sCtx.arc(jx, jy, radius, 0, Math.PI * 2);
+    sCtx.fill();
+  }
+
+  redrawOrb();
+
+  // count emotion
+  orbEmotionData[selectedBrush.id] = (orbEmotionData[selectedBrush.id] || 0) + 1;
+  updateOrbPercent();
+}
+
+function updateOrbPercent() {
+  const total = Object.values(orbEmotionData).reduce((a, b) => a + b, 0);
+  const pct = Math.min(100, Math.round(total / 1.2));
+  orbFillPercent = pct;
+  document.getElementById('orbPercent').textContent = pct + '%';
+  const saveBtn = document.getElementById('orbSaveBtn');
+  if (pct >= 30) {
+    saveBtn.classList.add('visible');
+  }
+  updateJournalMoods();
+}
+
+orbCanvas.addEventListener('mousedown', e => { isDrawing = true; paintAt(...Object.values(getEventPos(e, orbCanvas))); });
+orbCanvas.addEventListener('mousemove', e => { if (isDrawing) paintAt(...Object.values(getEventPos(e, orbCanvas))); });
+orbCanvas.addEventListener('mouseup', () => isDrawing = false);
+orbCanvas.addEventListener('mouseleave', () => isDrawing = false);
+
+orbCanvas.addEventListener('touchstart', e => { e.preventDefault(); isDrawing = true; const p = getEventPos(e, orbCanvas); paintAt(p.x, p.y); }, { passive: false });
+orbCanvas.addEventListener('touchmove', e => { e.preventDefault(); if (isDrawing) { const p = getEventPos(e, orbCanvas); paintAt(p.x, p.y); } }, { passive: false });
+orbCanvas.addEventListener('touchend', () => isDrawing = false);
+
+// ===================== SAVE ORB =====================
+function saveOrb() {
+  if (Object.keys(orbEmotionData).length === 0) return;
+
+  const dataUrl = orbCanvas.toDataURL('image/png');
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('tr-TR', { day:'numeric', month:'long', year:'numeric' });
+  const dateKey = now.toISOString().split('T')[0];
+
+  const journalText = document.getElementById('journalTextarea').value;
+
+  const total = Object.values(orbEmotionData).reduce((a,b)=>a+b,0);
+  const emotionPcts = {};
+  Object.entries(orbEmotionData).forEach(([id, v]) => {
+    emotionPcts[id] = Math.round(v / total * 100);
+  });
+
+  const mem = { date: dateStr, dateKey, orbImage: dataUrl, emotions: emotionPcts, journal: journalText };
+
+  // remove existing same day
+  savedMemories = savedMemories.filter(m => m.dateKey !== dateKey);
+  savedMemories.unshift(mem);
+  if (savedMemories.length > 30) savedMemories.pop();
+
+  localStorage.setItem('riley_memories', JSON.stringify(savedMemories));
+  renderCarousel();
+  renderMemoriesPage();
+  showToast('✦ Bugün kaydedildi!');
+}
+
+// ===================== CAROUSEL =====================
+function renderCarousel() {
+  const track = document.getElementById('carouselTrack');
+  track.innerHTML = '';
+  if (savedMemories.length === 0) {
+    track.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:20px 8px;">Henüz kaydedilen anın yok 🌸</div>';
+    return;
+  }
+  savedMemories.forEach(mem => {
+    const card = document.createElement('div');
+    card.className = 'memory-card';
+
+    const miniCanvas = document.createElement('canvas');
+    miniCanvas.width = 72; miniCanvas.height = 72;
+    const mc = miniCanvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => { mc.drawImage(img, 0, 0, 72, 72); };
+    img.src = mem.orbImage;
+
+    const orbMini = document.createElement('div');
+    orbMini.className = 'memory-orb-mini';
+    orbMini.appendChild(miniCanvas);
+
+    const dateEl = document.createElement('div');
+    dateEl.className = 'memory-date';
+    dateEl.textContent = mem.date;
+
+    const dotsEl = document.createElement('div');
+    dotsEl.className = 'memory-emotion-dots';
+    Object.keys(mem.emotions).slice(0,5).forEach(id => {
+      const em = EMOTIONS.find(e=>e.id===id);
+      if (!em) return;
+      const dot = document.createElement('div');
+      dot.className = 'emotion-dot';
+      dot.style.background = em.color;
+      dotsEl.appendChild(dot);
+    });
+
+    card.appendChild(orbMini);
+    card.appendChild(dateEl);
+    card.appendChild(dotsEl);
+    card.addEventListener('click', () => {
+      switchTab('memories', document.querySelectorAll('.tab-btn')[1]);
+      renderMemoryDetail(mem);
+    });
+    track.appendChild(card);
+  });
+}
+
+// ===================== MEMORIES PAGE =====================
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let selectedDateKey = null;
+
+function renderMemoriesPage() {
+  renderCalendar();
+  renderMemoryDetail(savedMemories[0] || null);
+}
+
+function calPrev() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+function calNext() {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
+                     'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  document.getElementById('calMonthLabel').textContent = TR_MONTHS[calMonth] + ' ' + calYear;
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+
+  const today = new Date();
+  const todayKey = today.toISOString().split('T')[0];
+
+  const firstDay = new Date(calYear, calMonth, 1);
+  let startDow = firstDay.getDay();
+  startDow = startDow === 0 ? 6 : startDow - 1;
+
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+  for (let i = 0; i < startDow; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'cal-day other-month';
+    grid.appendChild(empty);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const mm = String(calMonth+1).padStart(2,'0');
+    const dd = String(d).padStart(2,'0');
+    const dateKey = calYear + '-' + mm + '-' + dd;
+    const mem = savedMemories.find(m => m.dateKey === dateKey);
+    const isToday = dateKey === todayKey;
+    const isSelected = dateKey === selectedDateKey;
+
+    const cell = document.createElement('div');
+    cell.className = 'cal-day';
+
+    if (mem) {
+      const domColor = getDominantColor(mem.emotions);
+      cell.style.background = domColor;
+      cell.classList.add('has-memory');
+      cell.innerHTML = '<span class="cal-day-num">' + d + '</span><div class="cal-day-dot"></div>';
+      cell.onclick = (function(m, dk) { return function() {
+        selectedDateKey = dk; renderCalendar(); renderMemoryDetail(m);
+      }; })(mem, dateKey);
+    } else {
+      cell.classList.add('no-memory');
+      cell.innerHTML = '<span class="cal-day-num">' + d + '</span>';
+      cell.onclick = (function(dk) { return function() {
+        selectedDateKey = dk; renderCalendar(); renderMemoryDetail(null);
+      }; })(dateKey);
+    }
+
+    if (isToday) cell.classList.add('today');
+    if (isSelected) cell.classList.add('selected');
+    grid.appendChild(cell);
+  }
+}
+
+function getDominantColor(emotions) {
+  if (!emotions || !Object.keys(emotions).length) return '#f8bbd9';
+  const sorted = Object.entries(emotions).sort(function(a,b){ return b[1]-a[1]; });
+  const topId = sorted[0][0];
+  const emFind = EMOTIONS.find(function(e){ return e.id === topId; });
+  return emFind ? emFind.color + 'cc' : '#f8bbd9';
+}
+
+function renderMemoryDetail(mem) {
+  const area = document.getElementById('memoryDetailArea');
+  if (!mem) {
+    area.innerHTML = `
+      <div class="memory-detail-card empty">
+        <div class="empty-icon">🫧</div>
+        <div class="empty-text">Henüz kaydedilmiş anın yok.<br>Önce zihnini boyamayı dene.</div>
+      </div>`;
+    return;
+  }
+
+  const topEmotions = Object.entries(mem.emotions)
+    .sort((a,b) => b[1]-a[1]).slice(0,6);
+
+  let barsHtml = topEmotions.map(([id, pct]) => {
+    const em = EMOTIONS.find(e=>e.id===id);
+    if (!em) return '';
+    return `<div class="emotion-bar-row">
+      <span class="emotion-bar-label">${em.emoji} ${em.name}</span>
+      <div class="emotion-bar-track"><div class="emotion-bar-fill" style="width:${pct}%;background:${em.color}"></div></div>
+      <span class="emotion-bar-pct">${pct}%</span>
+    </div>`;
+  }).join('');
+
+  const journalHtml = mem.journal
+    ? `<div class="memory-journal-text">"${mem.journal.substring(0,200)}${mem.journal.length>200?'…':''}"</div>`
+    : '';
+
+  area.innerHTML = `
+    <div class="memory-detail-card">
+      <div class="memory-detail-header">
+        <div class="detail-orb">
+          <canvas id="detailOrbCanvas" width="64" height="64"></canvas>
+        </div>
+        <div class="detail-meta">
+          <div class="detail-date">${mem.date}</div>
+          <div class="detail-summary">
+            ${Object.keys(mem.emotions).length} farklı duygu · ${Object.values(mem.emotions).reduce((a,b)=>a+b,0) > 80 ? 'Yoğun bir gün' : 'Huzurlu bir gün'}
+          </div>
+        </div>
+      </div>
+      <div class="emotion-bars">${barsHtml}</div>
+      ${journalHtml}
+    </div>`;
+
+  // draw mini orb
+  const dc = document.getElementById('detailOrbCanvas');
+  if (dc) {
+    const dctx = dc.getContext('2d');
+    const img = new Image();
+    img.onload = () => dctx.drawImage(img, 0, 0, 64, 64);
+    img.src = mem.orbImage;
+  }
+}
+
+// ===================== JOURNAL =====================
+function updateJournalMoods() {
+  const row = document.getElementById('journalMoodRow');
+  const total = Object.values(orbEmotionData).reduce((a,b)=>a+b,0);
+  if (total === 0) {
+    row.innerHTML = '<span style="font-size:12px;color:var(--text-muted)">Henüz duygu seçilmedi · Önce küreyi boya 🎨</span>';
+    return;
+  }
+  const sorted = Object.entries(orbEmotionData).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  row.innerHTML = sorted.map(([id]) => {
+    const em = EMOTIONS.find(e=>e.id===id);
+    if (!em) return '';
+    return `<div class="journal-mood-chip">
+      <div class="journal-mood-dot" style="background:${em.color}"></div>
+      ${em.emoji} ${em.name}
+    </div>`;
+  }).join('');
+}
+
+function updateCharCount() {
+  const val = document.getElementById('journalTextarea').value;
+  document.getElementById('charCount').textContent = val.length + ' harf';
+  localStorage.setItem('riley_journal_today', val);
+}
+
+function saveJournal() {
+  const text = document.getElementById('journalTextarea').value;
+  if (!text.trim()) { showToast('Günlüğüne bir şeyler yaz önce 🌸'); return; }
+  localStorage.setItem('riley_journal_today', text);
+  showToast('Günlüğün kaydedildi ✦');
+}
+
+function loadJournalState() {
+  const saved = localStorage.getItem('riley_journal_today');
+  if (saved) {
+    document.getElementById('journalTextarea').value = saved;
+    document.getElementById('charCount').textContent = saved.length + ' harf';
+  }
+}
+
+// ===================== PHOTO =====================
+function handlePhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById('photoPreview');
+    const placeholder = document.querySelector('.photo-placeholder');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+    placeholder.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ===================== TAB SWITCHING =====================
+function switchTab(pageId, btn) {
+  if (currentPageId === pageId) return;
+
+  const pages = document.querySelectorAll('.page');
+  const currentPage = document.getElementById('page-' + currentPageId);
+  const targetPage = document.getElementById('page-' + pageId);
+
+  currentPage.classList.add('exit-left');
+  setTimeout(() => {
+    currentPage.classList.remove('active', 'exit-left');
+  }, 350);
+
+  targetPage.style.transform = 'translateX(30px)';
+  setTimeout(() => {
+    targetPage.classList.add('active');
+  }, 10);
+
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentPageId = pageId;
+}
+
+// ===================== TOAST =====================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===================== ONBOARDING =====================
+let obAvatar = '🌸';
+
+function buildAvatarGrid() {
+  // Doğum tarihi max = bugün (gelecek tarih seçilemesin)
+  const todayStr = new Date().toISOString().split('T')[0];
+  document.getElementById('obBday').setAttribute('max', todayStr);
+
+  const grid = document.getElementById('obAvatarGrid');
+  AVATARS.forEach((a, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'ob-avatar-btn' + (i === 0 ? ' selected' : '');
+    btn.textContent = a;
+    btn.onclick = () => {
+      document.querySelectorAll('.ob-avatar-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      obAvatar = a;
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function obNext(step) {
+  if (step === 1) {
+    const name = document.getElementById('obName').value.trim();
+    if (!name) { document.getElementById('obName').focus(); return; }
+  }
+  document.getElementById('ob-step-' + step).classList.remove('active');
+  document.getElementById('ob-step-' + (step + 1)).classList.add('active');
+  document.getElementById('od' + step).classList.remove('active');
+  document.getElementById('od' + (step + 1)).classList.add('active');
+}
+
+function obFinish() {
+  const name = document.getElementById('obName').value.trim() || 'Riley Kullanıcısı';
+  const bday = document.getElementById('obBday').value;
+  const bio  = document.getElementById('obBio').value.trim();
+
+  userProfile = { name, avatar: obAvatar, bday, bio };
+  localStorage.setItem('riley_profile', JSON.stringify(userProfile));
+
+  document.getElementById('onboarding').style.transition = 'opacity 0.5s ease';
+  document.getElementById('onboarding').style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('onboarding').classList.add('hidden');
+  }, 500);
+
+  applyProfile();
+  startNotifScheduler();
+  showNotifBanner('🌸', `Hoş geldin, ${name}!`, 'Riley seni bekliyor. Hadi küreyi boyamaya başla ✨');
+}
+
+function applyProfile() {
+  if (!userProfile) return;
+  const { name, avatar, bday, bio } = userProfile;
+
+  // header
+  document.getElementById('headerDate').innerHTML =
+    `<span style="font-size:13px;color:var(--text-main);font-weight:500">${name}</span><br>` +
+    new Date().toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long' });
+
+  // profil sayfası
+  document.getElementById('profileAvatarDisplay').textContent = avatar;
+  document.getElementById('tabProfileIcon').textContent = avatar;
+  document.getElementById('profileNameDisplay').textContent = name;
+  document.getElementById('profileBioDisplay').textContent = bio || '';
+
+  if (bday) {
+    const d = new Date(bday);
+    const formatted = d.toLocaleDateString('tr-TR', { day:'numeric', month:'long', year:'numeric' });
+    const age = Math.floor((Date.now() - d) / (365.25 * 24 * 3600 * 1000));
+    document.getElementById('profileBdayDisplay').textContent = `🎂 ${formatted} · ${age} yaşında`;
+  }
+
+  // stats
+  document.getElementById('statDays').textContent = savedMemories.length;
+  const allEmotionIds = new Set(savedMemories.flatMap(m => Object.keys(m.emotions || {})));
+  document.getElementById('statEmotions').textContent = allEmotionIds.size;
+  document.getElementById('statStreak').textContent = calcStreak();
+
+  // notif settings
+  document.getElementById('toggleNight').checked = notifSettings.night;
+  document.getElementById('toggleMorning').checked = notifSettings.morning;
+  document.getElementById('notifNightTime').value = notifSettings.nightTime;
+  document.getElementById('notifMorningTime').value = notifSettings.morningTime;
+}
+
+function calcStreak() {
+  if (!savedMemories.length) return 0;
+  const dates = savedMemories.map(m => m.dateKey).sort().reverse();
+  let streak = 0;
+  let d = new Date();
+  for (const key of dates) {
+    const expected = d.toISOString().split('T')[0];
+    if (key === expected) { streak++; d.setDate(d.getDate() - 1); }
+    else break;
+  }
+  return streak;
+}
+
+function openEditProfile() {
+  if (!userProfile) return;
+  document.getElementById('obName').value = userProfile.name || '';
+  document.getElementById('obBday').value = userProfile.bday || '';
+  document.getElementById('obBio').value = userProfile.bio || '';
+  obAvatar = userProfile.avatar || '🌸';
+  document.querySelectorAll('.ob-avatar-btn').forEach(b => {
+    b.classList.toggle('selected', b.textContent === obAvatar);
+  });
+  // reset to step 1
+  ['ob-step-1','ob-step-2','ob-step-3'].forEach((id,i) => {
+    document.getElementById(id).classList.toggle('active', i === 0);
+  });
+  ['od1','od2','od3'].forEach((id,i) => {
+    document.getElementById(id).classList.toggle('active', i === 0);
+  });
+  const ob = document.getElementById('onboarding');
+  ob.classList.remove('hidden');
+  ob.style.opacity = '0';
+  ob.style.transition = 'opacity 0.3s ease';
+  requestAnimationFrame(() => { ob.style.opacity = '1'; });
+}
+
+function resetProfile() {
+  if (!confirm('Profili sıfırlamak istediğinden emin misin?')) return;
+  localStorage.removeItem('riley_profile');
+  userProfile = null;
+  location.reload();
+}
+
+// ===================== PROFİL KAYDET =====================
+function saveNotifSettings() {
+  notifSettings = {
+    night: document.getElementById('toggleNight').checked,
+    nightTime: document.getElementById('notifNightTime').value,
+    morning: document.getElementById('toggleMorning').checked,
+    morningTime: document.getElementById('notifMorningTime').value
+  };
+  localStorage.setItem('riley_notif', JSON.stringify(notifSettings));
+  startNotifScheduler();
+  showToast('Bildirim ayarları kaydedildi ✦');
+}
+
+// ===================== BİLDİRİM SCHEDULER =====================
+let notifTimers = [];
+
+const MORNING_MESSAGES = [
+  'Bugün harika hissedeceksin, hazır mısın? ☀️',
+  'Günaydın! Yeni bir gün, yeni duygular. 🌷',
+  'Bugün kendine iyi bak. Riley seninle 🌸',
+  'Sabahın ilk ışığıyla gözlerin açılsın. ✨',
+  'Bugün nasıl hissediyorsun? Bana anlat 🌈'
+];
+const NIGHT_MESSAGES = [
+  'Bugünü nasıl geçirdin? Küren seni bekliyor 🌙',
+  'Günü kapatmadan duygularını boyamayı unutma 💜',
+  'Zihnini kürenle konuştur bu gece ✨',
+  'Bugünün renkleri neydi? Gel, küreye dök 🌸',
+  'Gece vakti, kendi sarayına dön 🏰'
+];
+
+function startNotifScheduler() {
+  notifTimers.forEach(clearTimeout);
+  notifTimers = [];
+
+  const now = new Date();
+  scheduleAt(notifSettings.nightTime, notifSettings.night, () => {
+    const msg = NIGHT_MESSAGES[Math.floor(Math.random() * NIGHT_MESSAGES.length)];
+    showNotifBanner('🌙', `İyi geceler, ${userProfile?.name || 'sevgili'}!`, msg);
+  });
+  scheduleAt(notifSettings.morningTime, notifSettings.morning, () => {
+    const msg = MORNING_MESSAGES[Math.floor(Math.random() * MORNING_MESSAGES.length)];
+    showNotifBanner('☀️', `Günaydın, ${userProfile?.name || 'sevgili'}!`, msg);
+  });
+}
+
+function scheduleAt(timeStr, enabled, callback) {
+  if (!enabled) return;
+  const [h, m] = timeStr.split(':').map(Number);
+  const now = new Date();
+  const target = new Date();
+  target.setHours(h, m, 0, 0);
+  if (target <= now) target.setDate(target.getDate() + 1);
+  const ms = target - now;
+  const t = setTimeout(() => {
+    callback();
+    // tekrar planla (24 saat sonra)
+    const daily = setInterval(callback, 24 * 60 * 60 * 1000);
+    notifTimers.push(daily);
+  }, ms);
+  notifTimers.push(t);
+}
+
+// ===================== BİLDİRİM BANNER =====================
+let bannerTimer = null;
+function showNotifBanner(icon, title, text) {
+  document.getElementById('notifIcon').textContent = icon;
+  document.getElementById('notifTitle').textContent = title;
+  document.getElementById('notifText').textContent = text;
+  const b = document.getElementById('notifBanner');
+  b.classList.add('show');
+  if (bannerTimer) clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => b.classList.remove('show'), 6000);
+}
+function closeNotifBanner() {
+  document.getElementById('notifBanner').classList.remove('show');
+  if (bannerTimer) clearTimeout(bannerTimer);
+}
+</script>
 </body>
 </html>
